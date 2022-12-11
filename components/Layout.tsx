@@ -1,5 +1,5 @@
-import type { NextPage } from 'next'
 import { ToastContainer } from 'react-toastify'
+import type { NextPage } from 'next'
 
 interface LayoutProps {
   children?: React.ReactNode

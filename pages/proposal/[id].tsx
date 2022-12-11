@@ -1,9 +1,8 @@
-import type { NextPage } from 'next'
-import { Container, Card, Row, Text, Col, Spacer, Button } from '@nextui-org/react'
-import styles from '../styles/Vote.module.css'
+import { Container, Card, Row, Text, Col, Spacer } from '@nextui-org/react'
 import Image from 'next/image'
 import voting from '../../public/voting.svg'
 import { Proposal } from '../../utils/proposalType'
+import type { NextPage } from 'next'
 
 // TODO get proposal id via useRouter
 const Vote: NextPage<Proposal> = (props) => {
