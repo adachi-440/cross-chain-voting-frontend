@@ -1,7 +1,8 @@
-import { Container, Row, Text, Col, Spacer, Button } from '@nextui-org/react'
+import type { NextPage } from 'next'
+import { Container, Card, Row, Text, Col, Spacer, Button } from '@nextui-org/react'
+import styles from '../styles/Top.module.css'
 import Image from 'next/image'
 import voting from '../public/voting.svg'
-import type { NextPage } from 'next'
 
 // TODO this file is index.tsx
 const Top: NextPage = () => {
