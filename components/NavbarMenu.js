@@ -1,13 +1,12 @@
 import { Navbar, Text } from '@nextui-org/react'
 import { Button } from '@nextui-org/react'
+import { Image } from '@nextui-org/react'
 
 const NavbarMenu = () => {
   return (
     <Navbar variant={'sticky'} color='inherit' isBordered>
       <Navbar.Brand>
-        <Text b color='inherit' hideIn='xs'>
-          Yotsuha
-        </Text>
+        <Image width={300} src='https://i.ibb.co/nP58sy7/lohoho.png' alt='Default Image' objectFit='scale-down' />
       </Navbar.Brand>
       <Navbar.Content hideIn='xs'>
         <Navbar.Link href='mint'>Proposal</Navbar.Link>
