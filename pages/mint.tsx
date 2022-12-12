@@ -39,7 +39,7 @@ const Mint: NextPage = () => {
         } else {
           result = await contract.balanceOf(account.address)
         }
-        setStakeAmount(result.toNumber())
+        setStakeBalance(result.toNumber())
       }
     } catch (error) {
       console.log(error)
