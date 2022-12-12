@@ -1,12 +1,22 @@
+import { BigNumber } from "ethers"
+
 export interface Proposal {
-  id: number
+  id: BigNumber
   title: string
+  status: string
   description: string
-  yes: number
-  no: number
+  yesVotes: BigNumber
+  noVotes: BigNumber
   creater: string
+  expirationTime: BigNumber
   voters: string[]
-  expirationTime: number
+  voterInfo: VoteInfo[]
+}
+
+export interface VoteInfo {
+  hasVoted: boolean
+  vote: boolean
+  weight: BigNumber
 }
 
 export interface ProposalInput {

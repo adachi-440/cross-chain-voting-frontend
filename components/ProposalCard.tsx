@@ -2,12 +2,14 @@ import type { NextPage } from 'next'
 import { Proposal } from '../utils/proposalType'
 import { Container, Card, Row, Text, Col, Spacer, Grid, Button, Badge } from '@nextui-org/react'
 import { useRouter } from 'next/router'
+import { converUnixToDate } from '../utils/util'
 
-// TODO use Proposal Interface
-const ProposalCard: NextPage = () => {
+interface ProposalData {
+  proposal: Proposal
+}
+
+const ProposalCard: NextPage<ProposalData> = (props) => {
   const router = useRouter()
-  const text =
-    'Stargate should become a hub for LayerZero assets (OFT tokens). Stargate should enable OFT tokens as an option for users, allowing a wider variety of tokens able to be bridged through Stargate. This will result in users having a singular easy destination to move many tokens cross chain allowing the protocol to also capture more long tail token flow without the need for more STG emissions. Proposal Stargate should add OFT tokens to the UI enabling more tokens to be transferred through Stargate.'
 
   const cutText = (txt: string) => {
     const txtList = txt.split(' ')
@@ -27,31 +29,41 @@ const ProposalCard: NextPage = () => {
   return (
     <>
       <Grid sm={12} md={5}>
-        <Card isPressable isHoverable css={{ mw: '600px' }} onPress={() => router.push('/proposal/1')}>
+        <Card
+          isPressable
+          isHoverable
+          css={{ mw: '600px' }}
+          onPress={() => router.push(`/proposal/${props.proposal.id.toNumber()}`)}
+        >
           <Card.Header>
             <Row gap={0} align={'center'}>
               <Col>
                 <Text weight={'normal'} size={24}>
-                  Proposal Title
+                  {props.proposal.title}
                 </Text>
               </Col>
               <Col css={{ textAlign: 'end' }}>
-                {/* TODO Need a function to check if active */}
-                <Badge enableShadow disableOutline color='success'>
-                  Active
-                </Badge>
+                {converUnixToDate(props.proposal.expirationTime.toNumber()).getTime() > Date.now() ? (
+                  <Badge enableShadow disableOutline color='success'>
+                    Active
+                  </Badge>
+                ) : (
+                  <Badge enableShadow disableOutline color='secondary'>
+                    Finisihed
+                  </Badge>
+                )}
               </Col>
             </Row>
           </Card.Header>
           <Card.Divider />
           <Card.Body css={{ py: '$10' }}>
-            <Text>{cutText(text)}</Text>
+            <Text>{cutText(props.proposal.description)}</Text>
             {/* TODO if voting is comleted, display vote result here */}
           </Card.Body>
           <Card.Divider />
           <Card.Footer>
             <Text weight={'normal'} size={16}>
-              Expire Date: 2022/12/11
+              Expire Date: {converUnixToDate(props.proposal.expirationTime.toNumber()).toDateString()}
             </Text>
           </Card.Footer>
         </Card>
