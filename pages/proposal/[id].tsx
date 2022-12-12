@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
-import { Container, Card, Row, Text, Col, Spacer, Button } from '@nextui-org/react'
-import styles from '../styles/Vote.module.css'
+import { Container, Card, Row, Text, Col, Spacer, Button, Grid, Progress } from '@nextui-org/react'
+import styles from '../../styles/Vote.module.css'
 import Image from 'next/image'
 import voting from '../../public/voting.svg'
 import { Proposal } from '../../utils/proposalType'
@@ -10,11 +10,15 @@ import { getVoteContract } from '../../utils/provider'
 import { showToast } from '../../utils/toast'
 import { converUnixToDate } from '../../utils/util'
 import { BigNumber } from 'ethers'
+import { useTokenAmount } from '../../hooks/useTokenAmount'
+import { useContract } from '../../hooks/useContract'
 
-// TODO get proposal id via useRouter
 const Vote: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
+  const tokenAmount = useTokenAmount()
+  // const { chainId, contract } = useContract()
+
   const [proposal, setProposal] = useState<Proposal>({
     id: BigNumber.from('0'),
     title: '',
@@ -40,6 +44,25 @@ const Vote: NextPage = () => {
       console.log(error)
       showToast(2, 'Failed to get data')
     }
+  }
+
+  // TODO
+  const vote = async (yes: boolean) => {
+    // let tx
+    // try {
+    //   if (contract) {
+    //     if (chainId !== 80001) {
+    //       tx = await contract.requestVote(yes, 1, 80001, id)
+    //     } else {
+    //       tx = await contract.castVote(id, yes)
+    //     }
+    //     await tx.wait()
+    //     showToast(1, 'Voting Success')
+    //   }
+    // } catch (error) {
+    //   console.log(error)
+    //   showToast(2, 'Failed to vote')
+    // }
   }
 
   useEffect(() => {
@@ -76,7 +99,70 @@ const Vote: NextPage = () => {
           </Card>
         </Col>
         <Col>
-          <Image src={voting} alt='Picture of the author' width={400} height={400} />
+          <Text weight={'normal'} size={32}>
+            You have: {tokenAmount.toString()} veToken
+          </Text>
+          <Spacer y={2} />
+          {converUnixToDate(proposal.expirationTime.toNumber()).getTime() > Date.now() ?? (
+            <div>
+              <Button
+                rounded
+                shadow
+                css={{
+                  background: '#0841D4',
+                }}
+                onPress={() => vote(true)}
+              >
+                Vote "Yes"
+              </Button>
+              <Spacer y={1} />
+              <Button
+                rounded
+                shadow
+                css={{
+                  background: '#0841D4',
+                }}
+                onPress={() => vote(false)}
+              >
+                Vote "No"
+              </Button>
+              <Spacer y={2} />
+            </div>
+          )}
+
+          <Grid.Container xs={12} sm={8} gap={2}>
+            <Grid>
+              <Text weight={'normal'} size={20}>
+                Yes
+              </Text>
+              <Progress
+                className={styles.progress_bar}
+                value={
+                  proposal.yesVotes.toNumber() !== 0
+                    ? proposal.yesVotes.div(proposal.noVotes.add(proposal.yesVotes)).mul(100).toNumber()
+                    : 0
+                }
+                size='lg'
+                shadow
+                css={{ width: '100%' }}
+              />
+            </Grid>
+            <Grid>
+              <Text weight={'normal'} size={20}>
+                No
+              </Text>
+              <Progress
+                color='error'
+                value={
+                  proposal.noVotes.toNumber() !== 0
+                    ? proposal.noVotes.div(proposal.noVotes.add(proposal.yesVotes)).mul(100).toNumber()
+                    : 0
+                }
+                size='lg'
+                shadow
+              />
+            </Grid>
+          </Grid.Container>
         </Col>
       </Row>
     </Container>
