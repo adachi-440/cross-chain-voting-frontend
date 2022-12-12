@@ -13,11 +13,16 @@ import { BigNumber } from 'ethers'
 import { useTokenAmount } from '../../hooks/useTokenAmount'
 import { useContract } from '../../hooks/useContract'
 
+interface VoteContent {
+  yesVotes: number
+  noVotes: number
+}
+
 const Vote: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
   const tokenAmount = useTokenAmount()
-  // const { chainId, contract } = useContract()
+  const { chainId, contract } = useContract()
 
   const [proposal, setProposal] = useState<Proposal>({
     id: BigNumber.from('0'),
@@ -32,37 +37,40 @@ const Vote: NextPage = () => {
     voterInfo: [],
   })
 
+  const [voteCount, setVoteCount] = useState<VoteContent>({ yesVotes: 0, noVotes: 0 })
+
   const getProposal = async () => {
-    const contract = getVoteContract()
-    if (contract && id !== undefined) {
-      const result: Proposal = await contract.getProposal(id)
-      console.log(result)
-      setProposal(result)
-    }
     try {
+      const contract = getVoteContract()
+      if (contract && id !== undefined) {
+        const pro: Proposal = await contract.getProposal(id)
+        setProposal(pro)
+        const vote: BigNumber[] = await contract.countVotes(id)
+        setVoteCount({ yesVotes: vote[0].toNumber(), noVotes: vote[1].toNumber() })
+        console.log(voteCount)
+      }
     } catch (error) {
       console.log(error)
       showToast(2, 'Failed to get data')
     }
   }
 
-  // TODO
   const vote = async (yes: boolean) => {
-    // let tx
-    // try {
-    //   if (contract) {
-    //     if (chainId !== 80001) {
-    //       tx = await contract.requestVote(yes, 1, 80001, id)
-    //     } else {
-    //       tx = await contract.castVote(id, yes)
-    //     }
-    //     await tx.wait()
-    //     showToast(1, 'Voting Success')
-    //   }
-    // } catch (error) {
-    //   console.log(error)
-    //   showToast(2, 'Failed to vote')
-    // }
+    let tx
+    try {
+      if (contract) {
+        if (chainId !== 80001) {
+          tx = await contract.requestVote(yes, 1, 80001, id)
+        } else {
+          tx = await contract.castVote(id, yes)
+        }
+        await tx.wait()
+        showToast(1, 'Voting Success')
+      }
+    } catch (error) {
+      console.log(error)
+      showToast(2, 'Failed to vote')
+    }
   }
 
   useEffect(() => {
@@ -75,7 +83,7 @@ const Vote: NextPage = () => {
         Vote
       </Text>
       <Spacer y={2} />
-      <Row gap={6}>
+      <Row gap={5}>
         <Col>
           <Card css={{ mw: '500px' }}>
             <Card.Header>
@@ -138,9 +146,7 @@ const Vote: NextPage = () => {
               <Progress
                 className={styles.progress_bar}
                 value={
-                  proposal.yesVotes.toNumber() !== 0
-                    ? proposal.yesVotes.div(proposal.noVotes.add(proposal.yesVotes)).mul(100).toNumber()
-                    : 0
+                  voteCount.yesVotes !== 0 ? (voteCount.yesVotes / (voteCount.noVotes + voteCount.yesVotes)) * 100 : 0
                 }
                 size='lg'
                 shadow
@@ -153,11 +159,7 @@ const Vote: NextPage = () => {
               </Text>
               <Progress
                 color='error'
-                value={
-                  proposal.noVotes.toNumber() !== 0
-                    ? proposal.noVotes.div(proposal.noVotes.add(proposal.yesVotes)).mul(100).toNumber()
-                    : 0
-                }
+                value={voteCount.noVotes !== 0 ? voteCount.noVotes / (voteCount.noVotes + voteCount.yesVotes) / 100 : 0}
                 size='lg'
                 shadow
               />
