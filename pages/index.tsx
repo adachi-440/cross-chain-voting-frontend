@@ -5,6 +5,7 @@ import Image from 'next/image'
 import voting from '../public/voting.svg'
 import { useRouter } from 'next/router'
 
+
 const Home: NextPage = () => {
   const router = useRouter()
   return (
