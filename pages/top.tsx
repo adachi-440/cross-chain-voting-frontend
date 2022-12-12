@@ -13,12 +13,12 @@ const Top: NextPage = () => {
           <Text weight={'bold'} size={40}>
             Gasless & Omnichain voting system
           </Text>
-          <Spacer y={3} />
+          <Spacer y={2} />
           <Text weight={'medium'} size={24}>
             Cross-chain messaging allows for on-chain voting from any chain.Users can participate in voting without
             worrying about gas costs.
           </Text>
-          <Spacer y={2} />
+          <Spacer y={1} />
           <Button
             auto
             rounded
