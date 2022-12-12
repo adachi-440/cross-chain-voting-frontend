@@ -9,10 +9,12 @@ import { useEffect, useState } from 'react'
 import { getVoteContract } from '../../utils/provider'
 import { showToast } from '../../utils/toast'
 import { converUnixToDate } from '../../utils/util'
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { useTokenAmount } from '../../hooks/useTokenAmount'
 import { useVoteContract } from '../../hooks/useVoteContract'
-import { useNetwork } from 'wagmi'
+import { useAccount, useBalance, useContract, useNetwork, useSigner } from 'wagmi'
+import DEPLOYMENTS from '../../constants/depolyments.json'
+import OFT_ABI from '../../constants/abis/oft.json'
 
 interface VoteContent {
   yesVotes: number
@@ -22,7 +24,7 @@ interface VoteContent {
 const Vote: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
-  const tokenAmount = useTokenAmount()
+  const [balance, setBalance] = useState<string>('0')
   const contract = useVoteContract()
   const { chain } = useNetwork()
   const chainId = chain?.id
@@ -42,6 +44,24 @@ const Vote: NextPage = () => {
 
   const [voteCount, setVoteCount] = useState<VoteContent>({ yesVotes: 0, noVotes: 0 })
 
+  const { address } = useAccount()
+
+  const getStakeBalance = async () => {
+    try {
+      if (contract) {
+        let result: BigNumber
+        if (chainId !== 80001) {
+          result = await contract.balanceOf(address)
+        } else {
+          result = await contract.getBalanceOfEachChain(chainId)
+        }
+        setBalance(ethers.utils.formatUnits(result._hex))
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const getProposal = async () => {
     try {
       const contract = getVoteContract()
@@ -49,8 +69,8 @@ const Vote: NextPage = () => {
         const pro: Proposal = await contract.getProposal(id)
         setProposal(pro)
         const vote: BigNumber[] = await contract.countVotes(id)
-        setVoteCount({ yesVotes: vote[0].toNumber(), noVotes: vote[1].toNumber() })
-        console.log(voteCount)
+        setVoteCount({ yesVotes: parseInt(vote[0]._hex), noVotes: parseInt(vote[1]._hex) })
+        console.log(parseInt(vote[1]._hex))
       }
     } catch (error) {
       console.log(error)
@@ -78,6 +98,7 @@ const Vote: NextPage = () => {
 
   useEffect(() => {
     getProposal()
+    getStakeBalance()
   }, [id])
 
   return (
@@ -111,10 +132,10 @@ const Vote: NextPage = () => {
         </Col>
         <Col>
           <Text weight={'normal'} size={32}>
-            You have: {tokenAmount.toString()} veToken
+            You have: {balance} veToken
           </Text>
           <Spacer y={2} />
-          {converUnixToDate(proposal.expirationTime.toNumber()).getTime() > Date.now() ?? (
+          {converUnixToDate(proposal.expirationTime.toNumber()).getTime() > Date.now() ? (
             <div>
               <Button
                 rounded
@@ -139,6 +160,8 @@ const Vote: NextPage = () => {
               </Button>
               <Spacer y={2} />
             </div>
+          ) : (
+            <div></div>
           )}
 
           <Grid.Container xs={12} sm={8} gap={2}>
@@ -162,7 +185,9 @@ const Vote: NextPage = () => {
               </Text>
               <Progress
                 color='error'
-                value={voteCount.noVotes !== 0 ? voteCount.noVotes / (voteCount.noVotes + voteCount.yesVotes) / 100 : 0}
+                value={
+                  voteCount.noVotes !== 0 ? (voteCount.noVotes / (voteCount.noVotes + voteCount.yesVotes)) * 100 : 0
+                }
                 size='lg'
                 shadow
               />
