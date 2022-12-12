@@ -13,7 +13,6 @@ const nextConfig = {
     return config;
   },
   env: {
-    PRIVATE_KEY: process.env.PRIVATE_KEY,
     POLYGON_TESTNET_API_KEY: process.env.POLYGON_TESTNET_API_KEY
   }
 }
