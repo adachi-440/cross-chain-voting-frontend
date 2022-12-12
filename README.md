@@ -1,7 +1,31 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Summry
+Mitsuha is a cross-chain voting system.
+Messaging allows voting from multiple chains to be combined into a single proposal.
 
+## Problem
+While many protocols these days are multi-chain deployments, the ability to vote is often limited to one chain. This requires bridging assets to that chain in order to vote, compromising the UX; some products support multiple chains on the web, but the data cannot be managed on-chain and is not well decentralized.
+
+## Solution
+Develop an omnichain voting system that allows voting from any chain.
+When a user casts a vote, the vote is sent to the chain that submitted the proposal using messaging.
+
+
+## User Flow
+1. Submit new proposals
+2. Mint multiple chains of tokens for voting
+3. Voting.
+4. Proposals are tabulated using messaging
+
+## Future Work
+In the future, we hope to do two things
+
+1. Integrate many chains
+Integrate more messaging protocols to allow voting from different chains. It will also allow voting to be sent using the most appropriate messaging protocol, comparing security, gas costs, speed of transaction, etc.
+
+2. providing a gasless solution
+Adding gasless functionality will allow users to vote without having to worry about the cost of gas. This allows chains that do not have native tokens to vote.
 
 
 ## Getting Started
