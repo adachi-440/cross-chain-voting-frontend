@@ -11,7 +11,8 @@ import { showToast } from '../../utils/toast'
 import { converUnixToDate } from '../../utils/util'
 import { BigNumber } from 'ethers'
 import { useTokenAmount } from '../../hooks/useTokenAmount'
-import { useContract } from '../../hooks/useContract'
+import { useVoteContract } from '../../hooks/useVoteContract'
+import { useNetwork } from 'wagmi'
 
 interface VoteContent {
   yesVotes: number
@@ -22,7 +23,9 @@ const Vote: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
   const tokenAmount = useTokenAmount()
-  const { chainId, contract } = useContract()
+  const contract = useVoteContract()
+  const { chain } = useNetwork()
+  const chainId = chain?.id
 
   const [proposal, setProposal] = useState<Proposal>({
     id: BigNumber.from('0'),

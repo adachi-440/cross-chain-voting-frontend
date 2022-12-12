@@ -1,5 +1,7 @@
 import type { NextPage } from 'next'
 import { ToastContainer } from 'react-toastify'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import 'react-toastify/dist/ReactToastify.css'
 
 interface LayoutProps {
   children?: React.ReactNode
@@ -7,13 +9,14 @@ interface LayoutProps {
 
 // TODO implenent Header
 const Header = () => {
-  return <h3>This is Header</h3>
+  return <ConnectButton />
 }
 
 const Layout: NextPage = ({ children }: LayoutProps) => {
   return (
     <div>
       <Header />
+      {children}
       <ToastContainer />
     </div>
   )

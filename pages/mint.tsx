@@ -4,23 +4,43 @@ import styles from '../styles/Top.module.css'
 import Image from 'next/image'
 import voting from '../public/voting.svg'
 import { useEffect, useState } from 'react'
-import { useContract } from '../hooks/useContract'
+import { useVoteContract } from '../hooks/useVoteContract'
 import { useTokenAmount } from '../hooks/useTokenAmount'
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { getAccount } from '@wagmi/core'
-import { useOFTContract } from '../hooks/useOFTContract'
 import { showToast } from '../utils/toast'
+import { useAccount, useBalance, useContract, useNetwork, useSigner } from 'wagmi'
+import DEPLOYMENTS from '../constants/depolyments.json'
+import OFT_ABI from '../constants/abis/oft.json'
+import { parseEther } from 'ethers/lib/utils.js'
 
 const Mint: NextPage = () => {
-  const balance = useTokenAmount()
-  const [stakeBalance, setStakeBalance] = useState<number>(0)
+  const [balance, setBalance] = useState<string>('0')
+  const [stakeBalance, setStakeBalance] = useState<string>('0')
   const [mintAmount, setMintAmount] = useState<number>(0)
   const [stakeAmount, setStakeAmount] = useState<number>(0)
 
-  const { chainId, contract } = useContract()
-  const oftContract = useOFTContract()
+  const contract = useVoteContract()
+  const { data: signer } = useSigner()
 
-  const account = getAccount()
+  const { chain } = useNetwork()
+  const chainId = chain?.id
+
+  const oftAddress = DEPLOYMENTS.oft[chain?.id.toString() as keyof typeof DEPLOYMENTS.oft]
+  const oftContract = useContract({
+    address: oftAddress,
+    abi: OFT_ABI,
+    signerOrProvider: signer,
+  })
+
+  console.log(oftAddress)
+
+  const { address } = useAccount()
+  const { data } = useBalance({
+    address,
+    token: oftAddress as `0x${string}`,
+    chainId: chainId,
+  })
 
   const inputMintAmount = (e: { target: { name: any; value: any } }) => {
     setMintAmount(e.target.value)
@@ -32,14 +52,14 @@ const Mint: NextPage = () => {
 
   const getStakeBalance = async () => {
     try {
-      if (contract && account) {
+      if (contract) {
         let result: BigNumber
         if (chainId !== 80001) {
-          result = await contract.getBalanceOfEachChain(chainId)
+          result = await contract.balanceOf(address)
         } else {
-          result = await contract.balanceOf(account.address)
+          result = await contract.getBalanceOfEachChain(chainId)
         }
-        setStakeBalance(result.toNumber())
+        setStakeBalance(ethers.utils.formatUnits(result._hex))
       }
     } catch (error) {
       console.log(error)
@@ -48,23 +68,25 @@ const Mint: NextPage = () => {
 
   const mint = async () => {
     try {
-      if (oftContract && account) {
-        const tx = await oftContract.mint(account.address, mintAmount)
+      if (oftContract) {
+        const tx = await oftContract.mint(address, parseEther(mintAmount.toString()))
         await tx.wait()
-        showToast(1, 'Complete minting')
+        showToast(1, 'Complete minting \n ')
       }
     } catch (error) {
       console.log(error)
+      showToast(2, 'Mint Failed')
     }
   }
   const stake = async () => {
     try {
-      if (contract && oftContract && account) {
-        let tx = await oftContract.approve(contract.address, stakeAmount * 2)
+      if (contract && oftContract) {
+        const addr = contract.address as `0x${string}`
+        let tx = await oftContract.approve(addr, BigNumber.from(parseEther(stakeAmount.toString())).mul(2))
         await tx.wait()
         showToast(1, 'Complete approving')
         if (chainId !== 80001) {
-          tx = await contract.stake(stakeAmount, 1, 80001)
+          tx = await contract.stake(parseEther(stakeAmount.toString()), 1, 80001)
           await tx.wait()
           showToast(1, 'Complete staking')
         } else {
@@ -75,14 +97,15 @@ const Mint: NextPage = () => {
       }
     } catch (error) {
       console.log(error)
+      showToast(2, 'Failed')
     }
   }
   const withdraw = async () => {
     try {
-      if (contract && oftContract && account) {
+      if (contract && oftContract) {
         let tx
         if (chainId !== 80001) {
-          tx = await contract.withdraw(stakeAmount, 1, 80001)
+          tx = await contract.withdraw(parseEther(stakeAmount.toString()), 1, 80001)
           await tx.wait()
           showToast(1, 'Complete withdrawing')
         } else {
@@ -93,12 +116,17 @@ const Mint: NextPage = () => {
       }
     } catch (error) {
       console.log(error)
+      showToast(2, 'Failed')
     }
   }
 
   useEffect(() => {
     getStakeBalance()
-  }, [])
+    console.log(data)
+    if (data !== undefined) {
+      setBalance(ethers.utils.formatUnits(data.value._hex))
+    }
+  }, [contract, data])
 
   return (
     <Container fluid>
@@ -170,7 +198,7 @@ const Mint: NextPage = () => {
                   Stake
                 </Button>
                 <Button
-                  disabled={stakeAmount === 0}
+                  disabled={stakeBalance === '0'}
                   rounded
                   css={{
                     background: '#0841D4',
