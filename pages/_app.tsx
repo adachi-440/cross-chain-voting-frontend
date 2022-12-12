@@ -9,12 +9,13 @@ import {
   darkTheme as rainbowDarkTheme,
   lightTheme as rainbowLightTheme,
 } from '@rainbow-me/rainbowkit'
-import { configureChains, createClient, WagmiConfig } from 'wagmi'
+import { Chain, configureChains, createClient, WagmiConfig } from 'wagmi'
 import { optimismGoerli, arbitrumGoerli, polygonMumbai } from 'wagmi/chains'
 
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import Layout from '../components/Layout'
+import { moonbase } from '../constants/chain'
 
 const lightTheme = createTheme({
   type: 'light',
@@ -31,7 +32,10 @@ const darkTheme = createTheme({
 })
 
 // Rainbow Kit
-const { chains, provider } = configureChains([optimismGoerli, arbitrumGoerli, polygonMumbai], [publicProvider()])
+const { chains, provider } = configureChains(
+  [optimismGoerli, arbitrumGoerli, polygonMumbai, moonbase],
+  [publicProvider()],
+)
 
 const { connectors } = getDefaultWallets({
   appName: 'My RainbowKit App',
