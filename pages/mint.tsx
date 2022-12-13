@@ -1,18 +1,15 @@
-import type { NextPage } from 'next'
-import { Container, Card, Row, Text, Col, Spacer, Button, Input, Grid } from '@nextui-org/react'
-import styles from '../styles/Top.module.css'
-import Image from 'next/image'
-import voting from '../public/voting.svg'
+import { Container, Card, Row, Text, Spacer, Button, Input, Grid } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
-import { useVoteContract } from '../hooks/useVoteContract'
-import { useTokenAmount } from '../hooks/useTokenAmount'
 import { BigNumber, ethers } from 'ethers'
-import { getAccount } from '@wagmi/core'
-import { showToast } from '../utils/toast'
 import { useAccount, useBalance, useContract, useNetwork, useSigner } from 'wagmi'
+import { parseEther } from 'ethers/lib/utils.js'
+import { useVoteContract } from '../hooks/useVoteContract'
+import { showToast } from '../utils/toast'
 import DEPLOYMENTS from '../constants/depolyments.json'
 import OFT_ABI from '../constants/abis/oft.json'
-import { parseEther } from 'ethers/lib/utils.js'
+import type { NextPage } from 'next'
+import { estimateFeeByAxelar, estimateFeeByLayerZero } from '../utils/estimateFee'
+import LoadingModal from '../components/LoadingModal'
 
 const Mint: NextPage = () => {
   const [balance, setBalance] = useState<string>('0')
@@ -20,8 +17,8 @@ const Mint: NextPage = () => {
   const [mintAmount, setMintAmount] = useState<number>(0)
   const [stakeAmount, setStakeAmount] = useState<number>(0)
 
-  const contract = useVoteContract()
   const { data: signer } = useSigner()
+  const contract = useVoteContract(signer)
 
   const { chain } = useNetwork()
   const chainId = chain?.id
@@ -33,14 +30,18 @@ const Mint: NextPage = () => {
     signerOrProvider: signer,
   })
 
-  console.log(oftAddress)
-
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
   const { data } = useBalance({
     address,
     token: oftAddress as `0x${string}`,
     chainId: chainId,
   })
+
+  const [visible, setVisible] = useState(false)
+
+  const closeHandler = () => {
+    setVisible(false)
+  }
 
   const inputMintAmount = (e: { target: { name: any; value: any } }) => {
     setMintAmount(e.target.value)
@@ -69,24 +70,36 @@ const Mint: NextPage = () => {
   const mint = async () => {
     try {
       if (oftContract) {
-        const tx = await oftContract.mint(address, parseEther(mintAmount.toString()))
+        setVisible(true)
+        const tx = await oftContract.mint(address, parseEther(mintAmount.toString()), { gasLimit: 2000000 })
         await tx.wait()
         showToast(1, 'Complete minting \n ')
       }
     } catch (error) {
       console.log(error)
+      setVisible(false)
       showToast(2, 'Mint Failed')
     }
+    setVisible(false)
   }
-  const stake = async () => {
+  const stake = async (protocolId: number) => {
     try {
-      if (contract && oftContract) {
+      let tx
+      if (contract && oftContract && chainId && signer) {
+        setVisible(true)
+        const parsedAmount = parseEther(stakeAmount.toString())
         const addr = contract.address as `0x${string}`
-        let tx = await oftContract.approve(addr, BigNumber.from(parseEther(stakeAmount.toString())).mul(2))
+        tx = await oftContract.approve(addr, BigNumber.from(parsedAmount).mul(2))
         await tx.wait()
         showToast(1, 'Complete approving')
         if (chainId !== 80001) {
-          tx = await contract.stake(parseEther(stakeAmount.toString()), 1, 80001)
+          let fee = BigNumber.from(0)
+          if (protocolId === 3) {
+            fee = await estimateFeeByLayerZero(chainId, signer, parsedAmount, 2)
+          } else if (protocolId === 4) {
+            fee = await estimateFeeByAxelar(1287)
+          }
+          let tx = await contract.stake(parsedAmount, protocolId, 80001, { value: fee, gasLimit: 2000000 })
           await tx.wait()
           showToast(1, 'Complete staking')
         } else {
@@ -94,39 +107,56 @@ const Mint: NextPage = () => {
           await tx.wait()
           showToast(1, 'Complete staking')
         }
+        setVisible(false)
+        getStakeBalance()
       }
     } catch (error) {
       console.log(error)
+      setVisible(false)
       showToast(2, 'Failed')
     }
   }
-  const withdraw = async () => {
+  const withdraw = async (protocolId: number) => {
     try {
-      if (contract && oftContract) {
+      if (contract && oftContract && chainId && signer) {
+        setVisible(true)
+        const parsedAmount = parseEther(stakeAmount.toString())
         let tx
         if (chainId !== 80001) {
-          tx = await contract.withdraw(parseEther(stakeAmount.toString()), 1, 80001)
+          let fee = BigNumber.from(0)
+          if (protocolId === 3) {
+            fee = await estimateFeeByLayerZero(chainId, signer, parsedAmount, 3)
+          } else if (protocolId === 4) {
+            fee = await estimateFeeByAxelar(1287)
+          }
+          tx = await contract.withdraw(parseEther(stakeAmount.toString()), protocolId, 80001, {
+            value: fee,
+            gasLimit: 2000000,
+          })
           await tx.wait()
           showToast(1, 'Complete withdrawing')
         } else {
           tx = await contract.withdraw(stakeAmount)
           await tx.wait()
+          setVisible(false)
           showToast(1, 'Complete withdrawing')
         }
       }
     } catch (error) {
       console.log(error)
+      setVisible(false)
       showToast(2, 'Failed')
     }
+    getStakeBalance()
   }
 
   useEffect(() => {
+    console.log(contract)
     getStakeBalance()
-    console.log(data)
     if (data !== undefined) {
       setBalance(ethers.utils.formatUnits(data.value._hex))
     }
-  }, [contract, data])
+  }, [contract, data, isConnected])
 
   return (
     <Container fluid>
@@ -193,7 +223,7 @@ const Mint: NextPage = () => {
                   css={{
                     background: '#0841D4',
                   }}
-                  onPress={() => stake()}
+                  onPress={() => stake(1)}
                 >
                   Stake
                 </Button>
@@ -203,7 +233,7 @@ const Mint: NextPage = () => {
                   css={{
                     background: '#0841D4',
                   }}
-                  onPress={() => withdraw()}
+                  onPress={() => withdraw(1)}
                 >
                   Withdraw
                 </Button>
@@ -212,6 +242,7 @@ const Mint: NextPage = () => {
           </Card>
         </Grid>
       </Grid.Container>
+      <LoadingModal visible={visible} onClose={closeHandler} />
     </Container>
   )
 }
