@@ -1,10 +1,8 @@
-import type { NextPage } from 'next'
-import { Container, Card, Row, Text, Col, Spacer, Button } from '@nextui-org/react'
-import styles from '../styles/Home.module.css'
+import { Container, Row, Text, Col, Spacer, Button } from '@nextui-org/react'
 import Image from 'next/image'
-import voting from '../public/voting.svg'
 import { useRouter } from 'next/router'
-
+import voting from '../public/voting.svg'
+import type { NextPage } from 'next'
 
 const Home: NextPage = () => {
   const router = useRouter()

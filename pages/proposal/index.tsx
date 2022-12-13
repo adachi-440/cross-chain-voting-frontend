@@ -1,24 +1,21 @@
-import type { NextPage } from 'next'
-import { Container, Card, Row, Text, Col, Spacer, Button, Grid } from '@nextui-org/react'
-import Image from 'next/image'
-import voting from '../../public/voting.svg'
-import ProposalCard from '../../components/ProposalCard'
+import { Container, Text, Spacer, Grid } from '@nextui-org/react'
 import { useEffect, useState } from 'react'
+import ProposalCard from '../../components/ProposalCard'
 import { Proposal } from '../../utils/proposalType'
 import { getVoteContract } from '../../utils/provider'
 import { showToast } from '../../utils/toast'
+import type { NextPage } from 'next'
 
 const Index: NextPage = () => {
   const [proposals, setProposals] = useState<Proposal[]>([])
 
   const getProposals = async () => {
-    const contract = getVoteContract()
-    if (contract) {
-      const result: Proposal[] = await contract.getAllProposals()
-      console.log(result)
-      setProposals(result)
-    }
     try {
+      const contract = getVoteContract()
+      if (contract) {
+        const result: Proposal[] = await contract.getAllProposals()
+        setProposals(result)
+      }
     } catch (error) {
       console.log(error)
       showToast(2, 'Failed to get data')

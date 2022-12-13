@@ -1,8 +1,8 @@
-import type { NextPage } from 'next'
-import { Proposal } from '../utils/proposalType'
-import { Container, Card, Row, Text, Col, Spacer, Grid, Button, Badge } from '@nextui-org/react'
+import { Card, Row, Text, Col, Grid, Badge } from '@nextui-org/react'
 import { useRouter } from 'next/router'
+import { Proposal } from '../utils/proposalType'
 import { converUnixToDate } from '../utils/util'
+import type { NextPage } from 'next'
 
 interface ProposalData {
   proposal: Proposal

@@ -1,20 +1,17 @@
-import type { NextPage } from 'next'
 import { Container, Card, Row, Text, Col, Spacer, Button, Grid, Progress } from '@nextui-org/react'
-import styles from '../../styles/Vote.module.css'
-import Image from 'next/image'
-import voting from '../../public/voting.svg'
-import { Proposal } from '../../utils/proposalType'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { BigNumber, ethers } from 'ethers'
+import { useAccount, useNetwork, useSigner } from 'wagmi'
+import styles from '../../styles/Vote.module.css'
+import { Proposal } from '../../utils/proposalType'
 import { getVoteContract } from '../../utils/provider'
 import { showToast } from '../../utils/toast'
 import { converUnixToDate } from '../../utils/util'
-import { BigNumber, ethers } from 'ethers'
-import { useTokenAmount } from '../../hooks/useTokenAmount'
 import { useVoteContract } from '../../hooks/useVoteContract'
-import { useAccount, useBalance, useContract, useNetwork, useSigner } from 'wagmi'
-import DEPLOYMENTS from '../../constants/depolyments.json'
-import OFT_ABI from '../../constants/abis/oft.json'
+import type { NextPage } from 'next'
+import { estimateFeeByLayerZero, estimateFeeByAxelar } from '../../utils/estimateFee'
+import LoadingModal from '../../components/LoadingModal'
 
 interface VoteContent {
   yesVotes: number
@@ -25,7 +22,8 @@ const Vote: NextPage = () => {
   const router = useRouter()
   const { id } = router.query
   const [balance, setBalance] = useState<string>('0')
-  const contract = useVoteContract()
+  const { data: signer } = useSigner()
+  const contract = useVoteContract(signer)
   const { chain } = useNetwork()
   const chainId = chain?.id
 
@@ -45,6 +43,12 @@ const Vote: NextPage = () => {
   const [voteCount, setVoteCount] = useState<VoteContent>({ yesVotes: 0, noVotes: 0 })
 
   const { address } = useAccount()
+
+  const [visible, setVisible] = useState(false)
+
+  const closeHandler = () => {
+    setVisible(false)
+  }
 
   const getStakeBalance = async () => {
     try {
@@ -78,19 +82,28 @@ const Vote: NextPage = () => {
     }
   }
 
-  const vote = async (yes: boolean) => {
+  const vote = async (yes: boolean, protocolId: number) => {
     let tx
     try {
-      if (contract) {
+      if (contract && chainId && signer && id) {
+        setVisible(true)
         if (chainId !== 80001) {
-          tx = await contract.requestVote(yes, 1, 80001, id)
+          let fee = BigNumber.from(0)
+          if (protocolId === 3) {
+            fee = await estimateFeeByLayerZero(chainId, signer, fee, 1, yes, parseInt(proposal.id._hex))
+          } else if (protocolId === 4) {
+            fee = await estimateFeeByAxelar(1287)
+          }
+          tx = await contract.requestVote(yes, protocolId, 80001, id)
         } else {
           tx = await contract.castVote(id, yes)
         }
         await tx.wait()
+        setVisible(false)
         showToast(1, 'Voting Success')
       }
     } catch (error) {
+      setVisible(false)
       console.log(error)
       showToast(2, 'Failed to vote')
     }
@@ -143,9 +156,9 @@ const Vote: NextPage = () => {
                 css={{
                   background: '#0841D4',
                 }}
-                onPress={() => vote(true)}
+                onPress={() => vote(true, 1)}
               >
-                Vote "Yes"
+                Vote &quot;Yes&quot;
               </Button>
               <Spacer y={1} />
               <Button
@@ -154,9 +167,9 @@ const Vote: NextPage = () => {
                 css={{
                   background: '#0841D4',
                 }}
-                onPress={() => vote(false)}
+                onPress={() => vote(false, 1)}
               >
-                Vote "No"
+                Vote &quot;No&quot;
               </Button>
               <Spacer y={2} />
             </div>
@@ -195,6 +208,7 @@ const Vote: NextPage = () => {
           </Grid.Container>
         </Col>
       </Row>
+      <LoadingModal visible={visible} onClose={closeHandler} />
     </Container>
   )
 }
