@@ -1,10 +1,10 @@
 ![logo](docs/mitsuha_logo.png)
 
-# Mitsuha - Cross Chain Voting System
+# Mitsuba - Cross Chain Voting System
 
 ## Summary
 
-Mitsuha is a cross-chain voting system.
+Mitsuba is a cross-chain voting system.
 Messaging allows voting from multiple chains to be combined into a single proposal.
 
 ## Problem
