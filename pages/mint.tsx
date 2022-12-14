@@ -7,9 +7,9 @@ import { useVoteContract } from '../hooks/useVoteContract'
 import { showToast } from '../utils/toast'
 import DEPLOYMENTS from '../constants/depolyments.json'
 import OFT_ABI from '../constants/abis/oft.json'
-import type { NextPage } from 'next'
 import { estimateFeeByAxelar, estimateFeeByLayerZero } from '../utils/estimateFee'
 import LoadingModal from '../components/LoadingModal'
+import type { NextPage } from 'next'
 
 const Mint: NextPage = () => {
   const [balance, setBalance] = useState<string>('0')
@@ -99,11 +99,11 @@ const Mint: NextPage = () => {
           } else if (protocolId === 4) {
             fee = await estimateFeeByAxelar(1287)
           }
-          let tx = await contract.stake(parsedAmount, protocolId, 80001, { value: fee, gasLimit: 2000000 })
+          const tx = await contract.stake(parsedAmount, protocolId, 80001, { value: fee, gasLimit: 2000000 })
           await tx.wait()
           showToast(1, 'Complete staking')
         } else {
-          tx = await contract.stake(stakeAmount)
+          tx = await contract.stake(parsedAmount)
           await tx.wait()
           showToast(1, 'Complete staking')
         }
@@ -136,7 +136,7 @@ const Mint: NextPage = () => {
           await tx.wait()
           showToast(1, 'Complete withdrawing')
         } else {
-          tx = await contract.withdraw(stakeAmount)
+          tx = await contract.withdraw(parsedAmount)
           await tx.wait()
           setVisible(false)
           showToast(1, 'Complete withdrawing')

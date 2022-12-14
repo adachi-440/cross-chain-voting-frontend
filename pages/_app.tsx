@@ -27,7 +27,7 @@ const darkTheme = createTheme({
 
 // Rainbow Kit
 const { chains, provider } = configureChains(
-  [moonbase, polygonMumbai, optimismGoerli, arbitrumGoerli],
+  [polygonMumbai, optimismGoerli, arbitrumGoerli, moonbase],
   [publicProvider()],
 )
 
@@ -54,7 +54,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     >
       <NextUIProvider>
         <WagmiConfig client={wagmiClient}>
-          <RainbowKitProvider chains={chains} theme={rainbowDarkTheme()} initialChain={moonbase}>
+          <RainbowKitProvider chains={chains} theme={rainbowDarkTheme()} coolMode>
             <Layout {...pageProps}>
               <Component {...pageProps} />
             </Layout>
