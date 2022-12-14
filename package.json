@@ -16,6 +16,9 @@
   },
   "devDependencies": {
     "@axelar-network/axelarjs-sdk": "^0.12.0-alpha.4",
+    "@biconomy/mexa": "^3.0.5",
+    "@biconomy/smart-account": "^0.0.4",
+    "@biconomy/web3-auth": "^0.0.4",
     "@nextui-org/react": "^1.0.0-beta.10",
     "@rainbow-me/rainbowkit": "^0.8.0",
     "@testing-library/jest-dom": "^5.16.5",

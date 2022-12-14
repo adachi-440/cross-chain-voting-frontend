@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Modal, Button, Text, Input, Row, Loading } from '@nextui-org/react'
+import React from 'react'
+import { Modal, Text, Loading } from '@nextui-org/react'
 import { NextPage } from 'next/types'
 
 interface Props {
