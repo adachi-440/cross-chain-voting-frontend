@@ -1,62 +1,35 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+![logo](docs/mitsuha_logo.png)
 
-## Summry
+# Mitsuha - Cross Chain Voting System
+
+## Summary
+
 Mitsuha is a cross-chain voting system.
 Messaging allows voting from multiple chains to be combined into a single proposal.
 
 ## Problem
+
 While many protocols these days are multi-chain deployments, the ability to vote is often limited to one chain. This requires bridging assets to that chain in order to vote, compromising the UX; some products support multiple chains on the web, but the data cannot be managed on-chain and is not well decentralized.
 
 ## Solution
+
 Develop an omnichain voting system that allows voting from any chain.
 When a user casts a vote, the vote is sent to the chain that submitted the proposal using messaging.
 
+Also, this token adopts Omni Chain FT (OFT) proposed by LayerZero. Therefore, it is easy to move assets, and the UX of cross-chain governance is improved.
 
 ## User Flow
-1. Submit new proposals
+
+1. Create new proposals
 2. Mint multiple chains of tokens for voting
-3. Voting.
-4. Proposals are tabulated using messaging
+3. Stake token
+4. Vote
+5. Proposals are tabulated using messaging
 
-## Future Work
-In the future, we hope to do two things
+## Demo site
 
-1. Integrate many chains
-Integrate more messaging protocols to allow voting from different chains. It will also allow voting to be sent using the most appropriate messaging protocol, comparing security, gas costs, speed of transaction, etc.
+https://cross-chain-voting-frontend.vercel.app
 
-2. providing a gasless solution
-Adding gasless functionality will allow users to vote without having to worry about the cost of gas. This allows chains that do not have native tokens to vote.
+## Demo video
 
-
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+https://www.youtube.com/watch?v=pDM4ci3XoFk&feature=youtu.be

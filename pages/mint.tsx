@@ -223,7 +223,7 @@ const Mint: NextPage = () => {
                   css={{
                     background: '#0841D4',
                   }}
-                  onPress={() => stake(1)}
+                  onPress={() => stake(4)}
                 >
                   Stake
                 </Button>
